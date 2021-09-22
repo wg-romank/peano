@@ -192,7 +192,37 @@ impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
 </span>struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 <span class="boring">}
 </span></code></pre></pre>
+<p>Another auxillary bit we need here is <code>NonZero</code> trait that would represent any natural number except for zero, we will need it to encode a base case for our induction.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">trait Nat {}
+</span>// we also need to amend our `Succ` definition to make it work
+struct Succ&lt;T: Nat&gt;(T);
+<span class="boring">impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
+</span>trait NonZero: Nat {}
+impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
+<span class="boring">}
+</span></code></pre></pre>
+<p>We include only natural numbers that are produced by applying <code>Succ</code> type constructor, thus excluding <code>_0</code>. </p>
 <p>Now let's use <code>ProofLt</code> as a target type to define less than relationship.</p>
+<p>Encoding base case is straightforward we literally translate the rule, for any <code>N</code> that is not a zero, <code>_0</code> is less than that <code>N</code>.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span><span class="boring">trait Nat {}
+</span><span class="boring">struct Succ&lt;T: Nat&gt;(T);
+</span><span class="boring">struct _0;
+</span><span class="boring">impl Nat for _0 {}
+</span><span class="boring">impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
+</span><span class="boring">trait Lt&lt;A: Nat, B: Nat&gt; {}
+</span><span class="boring">trait NonZero: Nat {}
+</span><span class="boring">impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
+</span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
+</span>impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The key to encoding induction step is to restrict recursive rule by adding <code>where</code> clause with constraint.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -203,8 +233,7 @@ impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
 </span><span class="boring">impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
 </span><span class="boring">trait Lt&lt;A: Nat, B: Nat&gt; {}
 </span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
-</span>impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
-impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
+</span>impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
     where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 <span class="boring">}
 </span></code></pre></pre>
@@ -251,6 +280,8 @@ fn main() {
 </span><span class="boring">trait Lt&lt;A: Nat, B: Nat&gt; {
 </span><span class="boring">    fn check() -&gt; () {}
 </span><span class="boring">}
+</span><span class="boring">trait NonZero: Nat {}
+</span><span class="boring">impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 </span><span class="boring">impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 </span><span class="boring">impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
@@ -275,8 +306,10 @@ fn main() {
 </span><span class="boring">trait Lt&lt;A: Nat, B: Nat&gt; {
 </span><span class="boring">    fn check() -&gt; () {}
 </span><span class="boring">}
+</span><span class="boring">trait NonZero: Nat {}
+</span><span class="boring">impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
-</span><span class="boring">impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
+</span><span class="boring">impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 </span><span class="boring">impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
 </span><span class="boring">    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 </span>
@@ -285,12 +318,12 @@ fn main() {
 }
 </code></pre></pre>
 <p>If we try to compile above code, the compiler would yell at us with something like</p>
-<pre><code>///    | struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
-///    | -------------------------------------
-///    | |
-///    | function or associated item `check` not found for this
-///    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;Succ&lt;_0&gt;&gt;&gt;, Succ&lt;Succ&lt;_0&gt;&gt;&gt;`
-///    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;_0&gt;&gt;, Succ&lt;_0&gt;&gt;`
+<pre><code>//    | struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
+//    | -------------------------------------
+//    | |
+//    | function or associated item `check` not found for this
+//    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;Succ&lt;_0&gt;&gt;&gt;, Succ&lt;Succ&lt;_0&gt;&gt;&gt;`
+//    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;_0&gt;&gt;, Succ&lt;_0&gt;&gt;`
 </code></pre>
 <p>It failed to find associated function <code>check</code> because trait <code>Lt</code> is not implemented for this varian of <code>ProofLt</code>.</p>
 <p>And this is exactly what we wanted to encode!</p>
@@ -310,6 +343,9 @@ trait Lt&lt;A: Nat, B: Nat&gt; {
     fn check() -&gt; () {}
 }
 
+trait NonZero: Nat {}
+impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
+
 struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
@@ -317,10 +353,12 @@ impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt
 
 fn main () {
     // ProofLt::&lt;_2, _3&gt;::check()
+    // this will fail
+    // ProofLt::&lt;_2, _2&gt;::check()
 }
 </code></pre></pre>
 <p>There's a link to Rust Playground to get a feel for it.</p>
-<p><a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=9ad218fab3078069b67c90299db5c6b3">https://play.rust-lang.org/</a></p>
+<p><a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=13ab14bfcc0d11a6cc04cf99c52750a5">https://play.rust-lang.org/</a></p>
 <p>This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more checke out this video by Rock The Jvm touching on a subject</p>
 <p><a href="https://www.youtube.com/watch?v=qwUYqv6lKtQ">https://www.youtube.com/watch?v=qwUYqv6lKtQ</a></p>
 

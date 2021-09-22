@@ -50,7 +50,37 @@ However before we define those rules using `impl` blocks as we dit for `Nat` tra
 struct ProofLt<A: Nat, B: Nat>(A, B);
 ```
 
+Another auxillary bit we need here is `NonZero` trait that would represent any natural number except for zero, we will need it to encode a base case for our induction.
+
+```rust
+# trait Nat {}
+// we also need to amend our `Succ` definition to make it work
+struct Succ<T: Nat>(T);
+# impl<T: Nat> Nat for Succ<T> {}
+trait NonZero: Nat {}
+impl<N: Nat> NonZero for Succ<N> {}
+```
+
+We include only natural numbers that are produced by applying `Succ` type constructor, thus excluding `_0`. 
+
 Now let's use `ProofLt` as a target type to define less than relationship.
+
+Encoding base case is straightforward we literally translate the rule, for any `N` that is not a zero, `_0` is less than that `N`.
+
+```rust
+# trait Nat {}
+# struct Succ<T: Nat>(T);
+# struct _0;
+# impl Nat for _0 {}
+# impl<T: Nat> Nat for Succ<T> {}
+# trait Lt<A: Nat, B: Nat> {}
+# trait NonZero: Nat {}
+# impl<N: Nat> NonZero for Succ<N> {}
+# struct ProofLt<A: Nat, B: Nat>(A, B);
+impl<N: NonZero> Lt<_0, N> for ProofLt<_0, N> {}
+```
+
+The key to encoding induction step is to restrict recursive rule by adding `where` clause with constraint.
 
 ```rust
 # trait Nat {}
@@ -60,7 +90,6 @@ Now let's use `ProofLt` as a target type to define less than relationship.
 # impl<T: Nat> Nat for Succ<T> {}
 # trait Lt<A: Nat, B: Nat> {}
 # struct ProofLt<A: Nat, B: Nat>(A, B);
-impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
 impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
     where ProofLt<A, B>: Lt<A, B> {}
 ```
@@ -115,6 +144,8 @@ Semantially this function would mean that `Lt` property is holding and we should
 # trait Lt<A: Nat, B: Nat> {
 #     fn check() -> () {}
 # }
+# trait NonZero: Nat {}
+# impl<N: Nat> NonZero for Succ<N> {}
 # struct ProofLt<A: Nat, B: Nat>(A, B);
 # impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
 # impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
@@ -142,8 +173,10 @@ Yay, it works! Now let's try to check whether it indeed rejects invalid examples
 # trait Lt<A: Nat, B: Nat> {
 #     fn check() -> () {}
 # }
+# trait NonZero: Nat {}
+# impl<N: Nat> NonZero for Succ<N> {}
 # struct ProofLt<A: Nat, B: Nat>(A, B);
-# impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
+# impl<N: NonZero> Lt<_0, N> for ProofLt<_0, N> {}
 # impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
 #     where ProofLt<A, B>: Lt<A, B> {}
 
@@ -155,12 +188,12 @@ fn main() {
 If we try to compile above code, the compiler would yell at us with something like
 
 ```
-///    | struct ProofLt<A: Nat, B: Nat>(A, B);
-///    | -------------------------------------
-///    | |
-///    | function or associated item `check` not found for this
-///    | doesn't satisfy `_: Lt<Succ<Succ<Succ<_0>>>, Succ<Succ<_0>>>`
-///    | doesn't satisfy `_: Lt<Succ<Succ<_0>>, Succ<_0>>`
+//    | struct ProofLt<A: Nat, B: Nat>(A, B);
+//    | -------------------------------------
+//    | |
+//    | function or associated item `check` not found for this
+//    | doesn't satisfy `_: Lt<Succ<Succ<Succ<_0>>>, Succ<Succ<_0>>>`
+//    | doesn't satisfy `_: Lt<Succ<Succ<_0>>, Succ<_0>>`
 ```
 
 It failed to find associated function `check` because trait `Lt` is not implemented for this varian of `ProofLt`.
@@ -185,6 +218,9 @@ trait Lt<A: Nat, B: Nat> {
     fn check() -> () {}
 }
 
+trait NonZero: Nat {}
+impl<N: Nat> NonZero for Succ<N> {}
+
 struct ProofLt<A: Nat, B: Nat>(A, B);
 impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
 impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
@@ -192,12 +228,14 @@ impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
 
 fn main () {
     // ProofLt::<_2, _3>::check()
+    // this will fail
+    // ProofLt::<_2, _2>::check()
 }
 ```
 
 There's a link to Rust Playground to get a feel for it.
 
-[https://play.rust-lang.org/](https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=9ad218fab3078069b67c90299db5c6b3)
+[https://play.rust-lang.org/](https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=13ab14bfcc0d11a6cc04cf99c52750a5)
 
 This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more checke out this video by Rock The Jvm touching on a subject
 
