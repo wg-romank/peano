@@ -283,7 +283,7 @@ fn main() {
 </span><span class="boring">trait NonZero: Nat {}
 </span><span class="boring">impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
-</span><span class="boring">impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
+</span><span class="boring">impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 </span><span class="boring">impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
 </span><span class="boring">    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 </span>
@@ -347,18 +347,19 @@ trait NonZero: Nat {}
 impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 
 struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
-impl&lt;N: Nat&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
+impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
     where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 
 fn main () {
-    // ProofLt::&lt;_2, _3&gt;::check()
+    ProofLt::&lt;_2, _3&gt;::check()
     // this will fail
     // ProofLt::&lt;_2, _2&gt;::check()
+    // ProofLt::&lt;_0, _0&gt;::check()
 }
 </code></pre></pre>
 <p>There's a link to Rust Playground to get a feel for it.</p>
-<p><a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=13ab14bfcc0d11a6cc04cf99c52750a5">https://play.rust-lang.org/</a></p>
+<p><a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=ba70a21d8fba30ca417674d873e12428">https://play.rust-lang.org/</a></p>
 <p>This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more checke out this video by Rock The Jvm touching on a subject</p>
 <p><a href="https://www.youtube.com/watch?v=qwUYqv6lKtQ">https://www.youtube.com/watch?v=qwUYqv6lKtQ</a></p>
 

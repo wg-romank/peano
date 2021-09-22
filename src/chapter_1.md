@@ -147,7 +147,7 @@ Semantially this function would mean that `Lt` property is holding and we should
 # trait NonZero: Nat {}
 # impl<N: Nat> NonZero for Succ<N> {}
 # struct ProofLt<A: Nat, B: Nat>(A, B);
-# impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
+# impl<N: NonZero> Lt<_0, N> for ProofLt<_0, N> {}
 # impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
 #     where ProofLt<A, B>: Lt<A, B> {}
 
@@ -222,20 +222,21 @@ trait NonZero: Nat {}
 impl<N: Nat> NonZero for Succ<N> {}
 
 struct ProofLt<A: Nat, B: Nat>(A, B);
-impl<N: Nat> Lt<_0, N> for ProofLt<_0, N> {}
+impl<N: NonZero> Lt<_0, N> for ProofLt<_0, N> {}
 impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
     where ProofLt<A, B>: Lt<A, B> {}
 
 fn main () {
-    // ProofLt::<_2, _3>::check()
+    ProofLt::<_2, _3>::check()
     // this will fail
     // ProofLt::<_2, _2>::check()
+    // ProofLt::<_0, _0>::check()
 }
 ```
 
 There's a link to Rust Playground to get a feel for it.
 
-[https://play.rust-lang.org/](https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=13ab14bfcc0d11a6cc04cf99c52750a5)
+[https://play.rust-lang.org/](https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=ba70a21d8fba30ca417674d873e12428)
 
 This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more checke out this video by Rock The Jvm touching on a subject
 
