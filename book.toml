@@ -5,5 +5,8 @@ multilingual = false
 src = "src"
 title = "Peano"
 
+[output.html]
+git-repository-url = "https://github.com/wg-romank/peano/"
+
 [output.html.playground]
 editable = true
