@@ -139,7 +139,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="peano"><a class="header" href="#peano">Peano</a></h1>
-<p>Rust's type system is quite powerful as it allows to encode complex relationship between user-defined types using recursive rules that are automatically applied by the compiler. Idea behind this post is to use some of those rules to encode properties of our domain. Here we take a look at <a href="https://en.wikipedia.org/wiki/Peano_axioms">Peano</a> axioms defined for natural numbers and try to derive some of them using traits, trait bounds and recursive impl blocks. We want to make compiler work for us by verifying facts about our domain, so that we could invoke compiler to check whether particular statement is holds or not. Our end goal is to encode natural numbers as types and their relationships as traits such that only valid relationships would compile. (e.g. in case we define types for 1 and 3 and relationship of less than, 1 &lt; 3 should compile but 3 &lt; 1 shouldn't, that all would be encoded using Rust's language syntax of course)</p>
+<p>Rust's type system is quite powerful as it allows to encode complex relationships between user-defined types using recursive rules that are automatically applied by the compiler. Idea behind this post is to use some of those rules to encode properties of our domain. Here we take a look at <a href="https://en.wikipedia.org/wiki/Peano_axioms">Peano</a> axioms defined for natural numbers and try to derive some of them using traits, trait bounds and recursive impl blocks. We want to make the compiler work for us by verifying facts about our domain, so that we could invoke the compiler to check whether a particular statement holds or not. Our end goal is to encode natural numbers as types and their relationships as traits such that only valid relationships would compile. (e.g. in case we define types for 1 and 3 and relationship of less than, 1 &lt; 3 should compile but 3 &lt; 1 shouldn't, that all would be encoded using Rust's language syntax of course)</p>
 <p>Let's define some natural numbers on the type level first.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -148,7 +148,7 @@
 struct Succ&lt;T&gt;(T);
 <span class="boring">}
 </span></code></pre></pre>
-<p>Here we use structs to define elements of natural set. We can start with <code>_0</code> and use type constructor <code>Succ</code> to create types for each natural number. <code>Succ</code> here is short for successor and we encode <code>Succ&lt;N&gt;</code> as successor of <code>N</code>, natural number that goes straight after <code>N</code>.</p>
+<p>Here we use structs to define elements of the natural set. We can start with <code>_0</code> and use the type constructor <code>Succ</code> to create types for each natural number. <code>Succ</code> here is short for successor and we encode <code>Succ&lt;N&gt;</code> as successor of <code>N</code>, the natural number that goes straight after <code>N</code>.</p>
 <p>Important note is that each element is represented by the type itself, not a value of that type, we don't plan to instantiate any values here.</p>
 <p>We have to manually construct 1, 2, 3, ... at this point. It should be possible to workaround that but we won't get into those details just yet.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -164,7 +164,7 @@ type _5 = Succ&lt;_4&gt;;
 <span class="boring">}
 </span></code></pre></pre>
 <p>Now we have types for 1, 2, 3, 4 and 5 but they are hardly useful on their own as they are just labels without any meaning attached.</p>
-<p>Let's now define the first property that must hold, which is all of those numbers are natural numbers. We will use trait <code>Nat</code> for this task.</p>
+<p>Let's now define the first property that must hold, which is that all of those numbers are natural numbers. We will use the trait <code>Nat</code> for this task.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -184,7 +184,7 @@ type _5 = Succ&lt;_4&gt;;
 impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
 <span class="boring">}
 </span></code></pre></pre>
-<p>Notice here second <code>impl</code> block is taking parameter <code>T</code> and is implementing <code>Nat</code> for successor of that type. This is essentially encoding property that natural numbers are closed with respect to addition, if you keep adding one to natural number you still get a natural number.</p>
+<p>Notice here the second <code>impl</code> block is taking parameter <code>T</code> and is implementing <code>Nat</code> for the successor of that type. This is essentially encoding the property that natural numbers are closed with respect to addition, if you keep adding one to the natural number you still get a natural number.</p>
 <p>We've encoded some rules but how do we actually check them? Let's use type bounds and helper functions for that.</p>
 <p>First define a function to test whether all number types we have defined are indeed natural (implement <code>Nat</code>)</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">trait Nat {}
@@ -198,15 +198,15 @@ impl&lt;T: Nat&gt; Nat for Succ&lt;T&gt; {}
 </span>fn test_is_nat&lt;T: Nat&gt;() -&gt; () {}
 
 fn main() {
-    test_is_nat::&lt;_0&gt;();
-    test_is_nat::&lt;_1&gt;();
-    test_is_nat::&lt;_2&gt;();
-    // ...
+   test_is_nat::&lt;_0&gt;();
+   test_is_nat::&lt;_1&gt;();
+   test_is_nat::&lt;_2&gt;();
+   // ...
 }
 </code></pre></pre>
 <p>Notice that the function is empty as we are only interested in types of our program.</p>
 <p>Now this compiles, which means our property holds. That's great but hardly that interesting.</p>
-<p>Let's define a trait <code>Lt</code> that would take two type parameters <code>A</code> and <code>B</code>. The meaning of this trait would be relationship between types <code>A</code> and <code>B</code>, that is <code>A &lt; B</code> in terms of natural numbers.</p>
+<p>Let's define a trait <code>Lt</code> that would take two type parameters <code>A</code> and <code>B</code>. The meaning of this trait would be the relationship between types <code>A</code> and <code>B</code>, that is <code>A &lt; B</code> in terms of natural numbers.</p>
 <p>In this post we will only consider less than (<code>&lt;</code>) but deriving various other laws should be similar.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -220,7 +220,7 @@ fn main() {
 <li><code>0</code> is less than any natural number, this is going to be base case of induction</li>
 <li>for any <code>A</code> and <code>B</code>, such that <code>A</code> is less than <code>B</code> we can state that <code>Succ&lt;A&gt;</code> is less than <code>Succ&lt;B&gt;</code> (if we add one to boths sides of valid inequality, the inequality should still hold)</li>
 </ul>
-<p>However before we define those rules using <code>impl</code> blocks as we dit for <code>Nat</code> trait we need to define additional type. When describing whether type is a natural number we used that particular type as a target to implement trait <code>Nat</code> (what goes after <code>for</code> in <code>impl</code> definition). In case of <code>Lt</code> relationship however we need to capture both types into that target type so let's create another struct and call it <code>ProofLt</code>, naming choice would more sense later.</p>
+<p>However before we define those rules using <code>impl</code> blocks as we did for <code>Nat</code> traits we need to define another additional type. When describing whether type is a natural number we used that particular type as a target to implement trait <code>Nat</code> (what goes after <code>for</code> in <code>impl</code> definition). In case of <code>Lt</code> relationship however we need to capture both types into that target type so let's create another struct and call it <code>ProofLt</code>, naming choice would make more sense later.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -228,7 +228,7 @@ fn main() {
 </span>struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 <span class="boring">}
 </span></code></pre></pre>
-<p>Another auxillary bit we need here is <code>NonZero</code> trait that would represent any natural number except for zero, we will need it to encode a base case for our induction.</p>
+<p>Another auxiliary bit we need here is the <code>NonZero</code> trait that would represent any natural number except for zero, we will need it to encode a base case for our induction.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -242,7 +242,7 @@ impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span></code></pre></pre>
 <p>We include only natural numbers that are produced by applying <code>Succ</code> type constructor, thus excluding <code>_0</code>.</p>
 <p>Now let's use <code>ProofLt</code> as a target type to define less than relationship.</p>
-<p>Encoding base case is straightforward we literally translate the rule, for any <code>N</code> that is not a zero, <code>_0</code> is less than that <code>N</code>.</p>
+<p>Encoding the base case is straightforward: we literally translate the rule, for any <code>N</code> that is not a zero, <code>_0</code> is less than that <code>N</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -258,7 +258,7 @@ impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span>impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 <span class="boring">}
 </span></code></pre></pre>
-<p>The key to encoding induction step is to restrict recursive rule by adding <code>where</code> clause with constraint.</p>
+<p>The key to encoding the induction step is to restrict recursive rule by adding <code>where</code> clause with constraint.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -270,23 +270,23 @@ impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span><span class="boring">trait Lt&lt;A: Nat, B: Nat&gt; {}
 </span><span class="boring">struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 </span>impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
-    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
+   where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 <span class="boring">}
 </span></code></pre></pre>
-<p>Here we only implement <code>Lt</code> for successors of <code>A</code> and <code>B</code> if property less than held for <code>A</code> and <code>B</code> themselves.</p>
+<p>Here we only implement <code>Lt</code> for successors of <code>A</code> and <code>B</code> if property is less than held for <code>A</code> and <code>B</code> themselves.</p>
 <p>As this rule is applied recursively, this is just enough for us to encode <code>Lt</code> for any two natural numbers. Compiler will do the heavy lifting for us here by recursively unwinding type definitions of types in questions until it hits the base case.</p>
-<p>Now to check whether <code>&lt;</code> is holding for some types <code>A</code> and <code>B</code> we could use our <code>ProofLt</code> struct to summon <code>Lt</code> trait implementations, but in order to do this we need to define some method on <code>Lt</code> trait we could call. In case method is found and compilation succeds we can conclude that <code>Lt</code> is implemented for that pair for types, thus <code>&lt;</code> property holds, otherwise it doesn't.</p>
+<p>Now to check whether <code>&lt;</code> is holding for some types <code>A</code> and <code>B</code> we could use our <code>ProofLt</code> struct to summon <code>Lt</code> trait implementations, but in order to do this we need to define some method on the <code>Lt</code> trait we could call. In case a method is found and compilation succeeds we can conclude that <code>Lt</code> is implemented for that pair for types, thus <code>&lt;</code> property holds, otherwise it doesn't.</p>
 <p>Let's amend our <code>Lt</code> definition with this extra function.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span><span class="boring">trait Nat {}
 </span>trait Lt&lt;A: Nat, B: Nat&gt; {
-    fn check() -&gt; () {}
+   fn check() -&gt; () {}
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Semantially this function would mean that <code>Lt</code> property is holding and we should only be able to call this function on our target type <code>ProofLt</code> in case <code>Lt</code> indeed holds. Otherwise compiler should yell at us failing to find function definiton. Again we are not really interested in calling this function (thus empty body and argument lits), but whether it is there or not.</p>
+<p>Semantically this function would mean that <code>Lt</code> property is holding and we should only be able to call this function on our target type <code>ProofLt</code> in case <code>Lt</code> indeed holds. Otherwise the compiler should yell at us failing to find function definition. Again we are not really interested in calling this function (thus empty body and argument list), but whether it is there or not.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">trait Nat {}
 </span><span class="boring">struct Succ&lt;T: Nat&gt;(T);
 </span><span class="boring">struct _0;
@@ -306,10 +306,10 @@ impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 </span><span class="boring">    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 </span>
 fn main() {
-    // this is actually only using our base case of induction
-    ProofLt::&lt;_0, _1&gt;::check();
-    // now the real test
-    ProofLt::&lt;_1, _3&gt;::check();
+   // this is actually only using our base case of induction
+   ProofLt::&lt;_0, _1&gt;::check();
+   // now the real test
+   ProofLt::&lt;_1, _3&gt;::check();
 }
 </code></pre></pre>
 <p>Yay, it works! Now let's try to check whether it indeed rejects invalid examples.</p>
@@ -332,7 +332,7 @@ fn main() {
 </span><span class="boring">    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 </span>
 fn main() {
-    ProofLt::&lt;_3, _2&gt;::check();
+   ProofLt::&lt;_3, _2&gt;::check();
 }
 </code></pre></pre>
 <p>If we try to compile above code, the compiler would yell at us with something like</p>
@@ -343,7 +343,7 @@ fn main() {
 //    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;Succ&lt;_0&gt;&gt;&gt;, Succ&lt;Succ&lt;_0&gt;&gt;&gt;`
 //    | doesn't satisfy `_: Lt&lt;Succ&lt;Succ&lt;_0&gt;&gt;, Succ&lt;_0&gt;&gt;`
 </code></pre>
-<p>It failed to find associated function <code>check</code> because trait <code>Lt</code> is not implemented for this variant of <code>ProofLt</code>.</p>
+<p>It failed to find the associated function <code>check</code> because trait <code>Lt</code> is not implemented for this variant of <code>ProofLt</code>.</p>
 <p>And this is exactly what we wanted to encode!</p>
 <p>You can play around more with <code>ProofLt</code> and try to define new natural numbers.</p>
 <pre><pre class="playground"><code class="language-rust editable">trait Nat {}
@@ -358,7 +358,7 @@ type _2 = Succ&lt;_1&gt;;
 type _3 = Succ&lt;_2&gt;;
 
 trait Lt&lt;A: Nat, B: Nat&gt; {
-    fn check() -&gt; () {}
+   fn check() -&gt; () {}
 }
 
 trait NonZero: Nat {}
@@ -367,19 +367,19 @@ impl&lt;N: Nat&gt; NonZero for Succ&lt;N&gt; {}
 struct ProofLt&lt;A: Nat, B: Nat&gt;(A, B);
 impl&lt;N: NonZero&gt; Lt&lt;_0, N&gt; for ProofLt&lt;_0, N&gt; {}
 impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt;
-    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
+   where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 
 fn main () {
-    ProofLt::&lt;_2, _3&gt;::check()
-    // this will fail
-    // ProofLt::&lt;_2, _2&gt;::check()
-    // ProofLt::&lt;_0, _0&gt;::check()
+   ProofLt::&lt;_2, _3&gt;::check()
+   // this will fail
+   // ProofLt::&lt;_2, _2&gt;::check()
+   // ProofLt::&lt;_0, _0&gt;::check()
 }
 </code></pre></pre>
 <p>There's also a link to Rust Playground to get a feel for it.</p>
 <p><a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2018&amp;gist=ba70a21d8fba30ca417674d873e12428">https://play.rust-lang.org/</a></p>
 <p>Now this is all obscure and abstract, but it is actually very powerful concept that can help us define properties from our domain in software and ensure that those properties hold using the compiler itself for verification.</p>
-<p>This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more checke out this video by Rock The Jvm touching on a subject</p>
+<p>This work was very much inspired by similar feature set of Scala that is using implicits as facts that can be derived on other types, if you are curious to learn more check out this video by Rock The Jvm touching on a subject</p>
 <p><a href="https://www.youtube.com/watch?v=qwUYqv6lKtQ">https://www.youtube.com/watch?v=qwUYqv6lKtQ</a></p>
 
                     </main>
