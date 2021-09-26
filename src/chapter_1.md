@@ -86,7 +86,7 @@ trait Lt<A: Nat, B: Nat> {}
 Let's try to derive laws for `Lt` using what we have defined so far. To formalize it using induction we can take following approach:
 
 - `0` is less than any natural number, this is going to be base case of induction
-- for any `A` and `B`, such that `A` is less than `B` we can state that `Succ<A>` is less than `Succ<B>` (if we add one to boths sides of valid inequality, the inequality should still hold)
+- for any `A` and `B`, such that `A` is less than `B` we can state that `Succ<A>` is less than `Succ<B>` (if we add one to both sides of valid inequality, the inequality should still hold)
 
 However before we define those rules using `impl` blocks as we did for `Nat` traits we need to define another additional type. When describing whether type is a natural number we used that particular type as a target to implement trait `Nat` (what goes after `for` in `impl` definition). In case of `Lt` relationship however we need to capture both types into that target type so let's create another struct and call it `ProofLt`, naming choice would make more sense later.
 
