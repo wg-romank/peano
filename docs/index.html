@@ -217,7 +217,7 @@ fn main() {
 <p>Let's try to derive laws for <code>Lt</code> using what we have defined so far. To formalize it using induction we can take following approach:</p>
 <ul>
 <li><code>0</code> is less than any natural number, this is going to be base case of induction</li>
-<li>for any <code>A</code> and <code>B</code>, such that <code>A</code> is less than <code>B</code> we can state that <code>Succ&lt;A&gt;</code> is less than <code>Succ&lt;B&gt;</code> (if we add one to boths sides of valid inequality, the inequality should still hold)</li>
+<li>for any <code>A</code> and <code>B</code>, such that <code>A</code> is less than <code>B</code> we can state that <code>Succ&lt;A&gt;</code> is less than <code>Succ&lt;B&gt;</code> (if we add one to both sides of valid inequality, the inequality should still hold)</li>
 </ul>
 <p>However before we define those rules using <code>impl</code> blocks as we did for <code>Nat</code> traits we need to define another additional type. When describing whether type is a natural number we used that particular type as a target to implement trait <code>Nat</code> (what goes after <code>for</code> in <code>impl</code> definition). In case of <code>Lt</code> relationship however we need to capture both types into that target type so let's create another struct and call it <code>ProofLt</code>, naming choice would make more sense later.</p>
 <pre><pre class="playground"><code class="language-rust">
