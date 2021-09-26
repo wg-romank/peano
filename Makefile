@@ -1,8 +1,11 @@
 clean:
 	rm -rf docs
 
-build: clean
+test:
+	mdbook test
+
+build: clean test
 	mdbook build
 	mv book docs
 
-.PHONY: clean build
+.PHONY: clean build test

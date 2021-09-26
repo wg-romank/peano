@@ -185,7 +185,7 @@ fn main() {
 
 Yay, it works! Now let's try to check whether it indeed rejects invalid examples.
 
-```rust
+```rust,compile_fail
 # trait Nat {}
 # struct Succ<T: Nat>(T);
 # struct _0;
@@ -251,10 +251,10 @@ impl<A: Nat, B: Nat> Lt<Succ<A>, Succ<B>> for ProofLt<Succ<A>, Succ<B>>
    where ProofLt<A, B>: Lt<A, B> {}
 
 fn main () {
-   ProofLt::<_2, _3>::check()
+   ProofLt::<_2, _3>::check();
    // this will fail
-   // ProofLt::<_2, _2>::check()
-   // ProofLt::<_0, _0>::check()
+   // ProofLt::<_2, _2>::check();
+   // ProofLt::<_0, _0>::check();
 }
 ```
 

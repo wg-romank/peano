@@ -313,7 +313,7 @@ fn main() {
 }
 </code></pre></pre>
 <p>Yay, it works! Now let's try to check whether it indeed rejects invalid examples.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">trait Nat {}
+<pre><pre class="playground"><code class="language-rust compile_fail"><span class="boring">trait Nat {}
 </span><span class="boring">struct Succ&lt;T: Nat&gt;(T);
 </span><span class="boring">struct _0;
 </span><span class="boring">impl Nat for _0 {}
@@ -370,10 +370,10 @@ impl&lt;A: Nat, B: Nat&gt; Lt&lt;Succ&lt;A&gt;, Succ&lt;B&gt;&gt; for ProofLt&lt
    where ProofLt&lt;A, B&gt;: Lt&lt;A, B&gt; {}
 
 fn main () {
-   ProofLt::&lt;_2, _3&gt;::check()
+   ProofLt::&lt;_2, _3&gt;::check();
    // this will fail
-   // ProofLt::&lt;_2, _2&gt;::check()
-   // ProofLt::&lt;_0, _0&gt;::check()
+   // ProofLt::&lt;_2, _2&gt;::check();
+   // ProofLt::&lt;_0, _0&gt;::check();
 }
 </code></pre></pre>
 <p>There's also a link to Rust Playground to get a feel for it.</p>
